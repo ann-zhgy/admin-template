@@ -1,0 +1,7 @@
+life.klstoys.admin.template.config.web.JacksonAutoConfiguration
+life.klstoys.admin.template.config.web.WebBaseEnumConverterAutoConfiguration
+life.klstoys.admin.template.config.mybatis.plus.MybatisPlusBatchInsertAutoConfiguration
+life.klstoys.admin.template.config.EmbeddedRedisAutoConfiguration
+life.klstoys.admin.template.config.RedisAutoConfiguration
+life.klstoys.admin.template.config.ValidatorAutoConfiguration
+life.klstoys.admin.template.config.ThreadPoolAutoConfiguration

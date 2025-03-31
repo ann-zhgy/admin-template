@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.klstoys.admin.template.rbac.dal.mapper.BackendFunctionMapper">
+    <resultMap id="BaseResultMap" type="life.klstoys.admin.template.rbac.dal.domain.BackendFunctionDO">
+        <!--@mbg.generated-->
+        <!--@Table backend_function-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="no" jdbcType="VARCHAR" property="no"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="request_method" jdbcType="TINYINT" property="requestMethod"
+                typeHandler="com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler"/>
+        <result column="request_url" jdbcType="VARCHAR" property="requestUrl"/>
+        <result column="app_key" jdbcType="VARCHAR" property="appKey"/>
+        <result column="status" jdbcType="TINYINT" property="status"
+                typeHandler="com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="VARCHAR" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        backend_function.id,
+        backend_function.`no`,
+        backend_function.title,
+        backend_function.request_method,
+        backend_function.request_url,
+        backend_function.app_key,
+        backend_function.`status`,
+        backend_function.creator,
+        backend_function.create_time,
+        backend_function.updater,
+        backend_function.update_time
+    </sql>
+
+    <select id="queryAuthorizedFunctions" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from backend_function
+                 inner join function_group_map on function_group_map.backend_function_no = backend_function.no
+                 inner join function_group
+                            on function_group.status = 1 and function_group.no = function_group_map.group_no
+                 inner join role_menu on role_menu.group_no = function_group_map.group_no
+                 inner join role on role.no = role_menu.role_no and role.status = 1
+                 inner join user_role on user_role.role_no = role.no
+        where user_role.username = #{username}
+          and user_role.app_key = #{appKey}
+          and backend_function.status = 1
+    </select>
+
+    <select id="selectByGroupNo" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from backend_function
+                 inner join function_group_map on function_group_map.backend_function_no = backend_function.no
+        where function_group_map.group_no = #{groupNo}
+    </select>
+
+    <select id="selectUserIdsByFunctionNo" resultType="java.lang.Long">
+        select user.id
+        from function_group_map
+                 inner join function_group
+                            on function_group.status = 1 and function_group.no = function_group_map.group_no
+                 inner join frontend_page
+                            on frontend_page.status = 1 and frontend_page.no = function_group.frontend_page_no
+                 inner join role_menu on role_menu.group_no = function_group_map.group_no
+                 inner join role on role.status = 1 and role.no = role_menu.role_no
+                 inner join user_role on user_role.role_no = role.no
+                 inner join user on user.status = 1 and user.username = user_role.username
+        where function_group_map.backend_function_no = #{functionNo}
+    </select>
+</mapper>

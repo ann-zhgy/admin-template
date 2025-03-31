@@ -17,22 +17,6 @@ spring:
       host: localhost
       port: 6379
 redis.type: embedded
-captcha:
-  prefix: behavior-captcha
-  expire:
-    default: 10000
-    WORD_IMAGE_CLICK: 20000
-  init-default-resource: true
-  local-cache-enabled: true
-  local-cache-size: 20
-  local-cache-wait-time: 5000
-  local-cache-period: 2000
-  font-path:
-    - classpath:captcha/font/SourceHanSansSC-Normal.otf
-  secondary:
-    enabled: false
-    expire: 120000
-    keyPrefix: "behavior-captcha:secondary"
 web:
   exception:
     template: '{"code":"#{code}","message":"#{message}"}'

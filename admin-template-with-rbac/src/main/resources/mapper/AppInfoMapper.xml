@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.klstoys.admin.template.rbac.dal.mapper.AppInfoMapper">
+    <resultMap id="BaseResultMap" type="life.klstoys.admin.template.rbac.dal.domain.AppInfoDO">
+        <!--@mbg.generated-->
+        <!--@Table app_info-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="app_key" jdbcType="VARCHAR" property="appKey"/>
+        <result column="app_name" jdbcType="VARCHAR" property="appName"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="app_type" jdbcType="TINYINT" property="appType"
+                typeHandler="life.klstoys.admin.template.rbac.dal.type.handler.AppTypeEnumTypeHandler"/>
+        <result column="access_control_by" jdbcType="TINYINT" property="accessControlBy"
+                typeHandler="com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler"/>
+        <result column="grant_access_permission_by" jdbcType="TINYINT" property="grantAccessPermissionBy"
+                typeHandler="com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler"/>
+        <result column="status" jdbcType="TINYINT" property="status"
+                typeHandler="com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="VARCHAR" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        app_info.id,
+        app_info.app_key,
+        app_info.app_name,
+        app_info.description,
+        app_info.app_type,
+        app_info.access_control_by,
+        app_info.grant_access_permission_by,
+        app_info.status,
+        app_info.creator,
+        app_info.create_time,
+        app_info.updater,
+        app_info.update_time
+    </sql>
+
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from app_info
+                 left join user_app on user_app.app_key = app_info.app_key
+        where user_app.username = #{username}
+    </select>
+</mapper>

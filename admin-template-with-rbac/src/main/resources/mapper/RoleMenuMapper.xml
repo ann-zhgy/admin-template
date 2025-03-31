@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.klstoys.admin.template.rbac.dal.mapper.RoleMenuMapper">
+    <resultMap id="BaseResultMap" type="life.klstoys.admin.template.rbac.dal.domain.RoleMenuDO">
+        <!--@mbg.generated-->
+        <!--@Table role_menu-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="role_no" jdbcType="VARCHAR" property="roleNo"/>
+        <result column="frontend_page_no" jdbcType="VARCHAR" property="frontendPageNo"/>
+        <result column="group_no" jdbcType="VARCHAR" property="groupNo"/>
+        <result column="app_key" jdbcType="VARCHAR" property="appKey"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="VARCHAR" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        role_menu.id,
+        role_menu.role_no,
+        role_menu.frontend_page_no,
+        role_menu.group_no,
+        role_menu.app_key,
+        role_menu.creator,
+        role_menu.create_time,
+        role_menu.updater,
+        role_menu.update_time
+    </sql>
+
+    <select id="selectByUsernameAndAppKey"
+            resultType="life.klstoys.admin.template.rbac.dal.support.domain.UserAuthorMenuDO">
+        select frontend_page.no            as menuNo,
+               frontend_page.component_key as menuComponentKey,
+               frontend_page.title         as menuTitle,
+               function_group.no           as functionGroupNo
+        from role_menu
+                 inner join frontend_page
+                            on role_menu.frontend_page_no = frontend_page.no and
+                               role_menu.app_key = frontend_page.app_key and
+                               frontend_page.status = 1
+                 inner join function_group
+                            on function_group.frontend_page_no = frontend_page.no and function_group.status = 1
+                 inner join user_role
+                            on role_menu.role_no = user_role.role_no and user_role.app_key = role_menu.app_key
+                 inner join role on role.no = user_role.role_no and role.status = 1
+        where user_role.username = #{username}
+          and user_role.app_key = #{appKey}
+    </select>
+
+    <delete id="deleteByList">
+        delete
+        from role_menu
+        where app_key = #{appKey}
+          and (role_no, frontend_page_no, group_no) in (
+        <foreach collection="list" item="item" separator=",">
+            (#{item.roleNo}, #{item.frontendPageNo}, #{item.groupNo})
+        </foreach>
+        )
+    </delete>
+</mapper>

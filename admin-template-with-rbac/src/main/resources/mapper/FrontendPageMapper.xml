@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.klstoys.admin.template.rbac.dal.mapper.FrontendPageMapper">
+    <resultMap id="BaseResultMap" type="life.klstoys.admin.template.rbac.dal.domain.FrontendPageDO">
+        <!--@mbg.generated-->
+        <!--@Table frontend_page-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="no" jdbcType="VARCHAR" property="no"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="component_key" jdbcType="VARCHAR" property="componentKey"/>
+        <result column="parent_no" jdbcType="VARCHAR" property="parentNo"/>
+        <result column="app_key" jdbcType="VARCHAR" property="appKey"/>
+        <result column="status" jdbcType="TINYINT" property="status"
+                typeHandler="com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="VARCHAR" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        frontend_page.id,
+        frontend_page.`no`,
+        frontend_page.title,
+        frontend_page.component_key,
+        frontend_page.parent_no,
+        frontend_page.app_key,
+        frontend_page.`status`,
+        frontend_page.creator,
+        frontend_page.create_time,
+        frontend_page.updater,
+        frontend_page.update_time
+    </sql>
+
+    <select id="selectLeafMenus" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from frontend_page
+            inner join (select frontend_page_no
+                        from function_group
+        <where>
+            <if test="appKey != null and appKey != ''">
+                and function_group.app_key = #{appKey}
+            </if>
+        </where>
+        group by frontend_page_no) as tmp
+        on tmp.frontend_page_no = frontend_page.no
+        <where>
+            <if test="no != null and no != ''">
+                and frontend_page.no = #{appKey}
+            </if>
+            <if test="title != null and title != ''">
+                and frontend_page.title like concat(#{title}, '%')
+            </if>
+            <if test="componentKey != null and componentKey != ''">
+                and frontend_page.component_key = #{componentKey}
+            </if>
+            <if test="parentNo != null and parentNo != ''">
+                and frontend_page.parent_no = #{parentNo}
+            </if>
+            <if test="appKey != null and appKey != ''">
+                and frontend_page.app_key = #{appKey}
+            </if>
+            <if test="status != null">
+                and frontend_page.status = #{status.code}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectNoLeafMenus" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from frontend_page
+        where no not in (select frontend_page_no
+                         from function_group
+        <where>
+            <if test="appKey != null and appKey != ''">
+                and function_group.app_key = #{appKey}
+            </if>
+        </where>
+        group by frontend_page_no)
+        <if test="no != null and no != ''">
+            and frontend_page.no = #{appKey}
+        </if>
+        <if test="title != null and title != ''">
+            and frontend_page.title like concat(#{title}, '%')
+        </if>
+        <if test="componentKey != null and componentKey != ''">
+            and frontend_page.component_key = #{componentKey}
+        </if>
+        <if test="parentNo != null and parentNo != ''">
+            and frontend_page.parent_no = #{parentNo}
+        </if>
+        <if test="appKey != null and appKey != ''">
+            and frontend_page.app_key = #{appKey}
+        </if>
+        <if test="status != null">
+            and frontend_page.status = #{status.code}
+        </if>
+    </select>
+
+    <select id="selectUserIdsByMenuNo" resultType="java.lang.Long">
+        select user.id
+        from role_menu
+                 inner join role
+                            on role_menu.role_no = role.no and role.status = 1 and
+                               role_menu.frontend_page_no = #{menuNo}
+                 inner join user_role on user_role.role_no = role.no
+                 inner join user on user_role.username = user.username and user.status = 1
+    </select>
+</mapper>

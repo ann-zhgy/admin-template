@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.klstoys.admin.template.rbac.dal.mapper.FunctionGroupMapper">
+    <resultMap id="BaseResultMap" type="life.klstoys.admin.template.rbac.dal.domain.FunctionGroupDO">
+        <!--@mbg.generated-->
+        <!--@Table function_group-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="no" jdbcType="VARCHAR" property="no"/>
+        <result column="title" jdbcType="VARCHAR" property="title"/>
+        <result column="app_key" jdbcType="VARCHAR" property="appKey"/>
+        <result column="frontend_page_no" jdbcType="VARCHAR" property="frontendPageNo"/>
+        <result column="group_call_type" jdbcType="VARCHAR" property="groupCallType"
+                typeHandler="com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler"/>
+        <result column="status" jdbcType="TINYINT" property="status"
+                typeHandler="com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="VARCHAR" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        function_group.id,
+        function_group.`no`,
+        function_group.title,
+        function_group.app_key,
+        function_group.frontend_page_no,
+        function_group.group_call_type,
+        function_group.`status`,
+        function_group.creator,
+        function_group.create_time,
+        function_group.updater,
+        function_group.update_time
+    </sql>
+</mapper>

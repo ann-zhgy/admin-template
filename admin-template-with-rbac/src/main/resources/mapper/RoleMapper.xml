@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.klstoys.admin.template.rbac.dal.mapper.RoleMapper">
+    <resultMap id="BaseResultMap" type="life.klstoys.admin.template.rbac.dal.domain.RoleDO">
+        <!--@mbg.generated-->
+        <!--@Table `role`-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="no" jdbcType="VARCHAR" property="no"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="name_zh" jdbcType="VARCHAR" property="nameZh"/>
+        <result column="description" jdbcType="VARCHAR" property="description"/>
+        <result column="app_key" jdbcType="VARCHAR" property="appKey"/>
+        <result column="status" jdbcType="TINYINT" property="status"
+                typeHandler="com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="VARCHAR" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        `role`.id,
+        `role`.`no`,
+        `role`.`name`,
+        `role`.`name_zh`,
+        `role`.`description`,
+        `role`.app_key,
+        `role`.`status`,
+        `role`.creator,
+        `role`.create_time,
+        `role`.updater,
+        `role`.update_time
+    </sql>
+
+    <select id="selectByUsernameAndAppkey" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from role
+                 left join user_role on role.no = user_role.role_no
+        where user_role.username = #{username}
+        <if test="appkey != null and appkey != ''">
+            and user_role.app_key = #{appkey}
+        </if>
+        and role.status = 1
+    </select>
+</mapper>

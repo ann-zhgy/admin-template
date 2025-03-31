@@ -1,0 +1,33 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: admin-template-with-rbac
+  jackson:
+    time-zone: GMT+8
+    date-format: yyyy-MM-dd HH:mm:ss
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/admin-template-rbac?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+  data:
+    redis:
+      database: 0
+      host: localhost
+      port: 6379
+redis.type: embedded
+web:
+  exception:
+    template: '{"code":"#{code}","message":"#{message}"}'
+logging:
+  level:
+    life.klstoys.admin.template.rbac.dal.mapper: debug
+captcha:
+  resource:
+    path:
+      background:
+        concat: captcha/background-image2
+        rotate: captcha/background-image2
+        slider: captcha/background-image2
+        word-image-click: captcha/background-image2

@@ -1,0 +1,2 @@
+org.springframework.context.ApplicationContextInitializer=\
+  life.klstoys.admin.template.config.SpringUtilApplicationContextInitializer

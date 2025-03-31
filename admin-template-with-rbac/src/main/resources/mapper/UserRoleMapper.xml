@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="life.klstoys.admin.template.rbac.dal.mapper.UserRoleMapper">
+    <resultMap id="BaseResultMap" type="life.klstoys.admin.template.rbac.dal.domain.UserRoleDO">
+        <!--@mbg.generated-->
+        <!--@Table user_role-->
+        <id column="id" jdbcType="BIGINT" property="id"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="role_no" jdbcType="VARCHAR" property="roleNo"/>
+        <result column="app_key" jdbcType="VARCHAR" property="appKey"/>
+        <result column="creator" jdbcType="VARCHAR" property="creator"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="updater" jdbcType="VARCHAR" property="updater"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        <!--@mbg.generated-->
+        user_role.id,
+        user_role.username,
+        user_role.role_no,
+        user_role.app_key,
+        user_role.creator,
+        user_role.create_time,
+        user_role.updater,
+        user_role.update_time
+    </sql>
+
+    <select id="countEnableByRole" resultType="long">
+        select count(*)
+        from user_role
+                 inner join user on user.username = user_role.username
+        where user.status = 1
+          and user_role.role_no = #{roleNo}
+    </select>
+</mapper>

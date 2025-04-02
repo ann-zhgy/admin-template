@@ -10,19 +10,26 @@ import jakarta.annotation.Nonnull;
 import life.klstoys.admin.template.captcha.config.properties.CaptchaResourcePathProperties;
 import life.klstoys.admin.template.exception.BizException;
 import life.klstoys.admin.template.exception.ExceptionEnum;
+import life.klstoys.admin.template.utils.StreamUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
-import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.util.Arrays;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author zhanggaoyu@workatdata.com
@@ -67,11 +74,8 @@ public class ResourceStorePostProcessor implements BeanPostProcessor {
      */
     private @Nonnull List<ResourceMap> parseTemplateFromPath(String templatePath) {
         String path = templatePath.startsWith("/") ? templatePath.substring(1) : templatePath;
-        File[] files = getTemplatePathSubFiles(path);
-        return Arrays.stream(files)
-                .map(firstLevalFile -> buildResourceMapWithFile(templatePath, firstLevalFile))
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+        List<String> files = getTemplatePathSubFiles(path);
+        return buildResourceMapWithFilepathList(templatePath, files);
     }
 
     /**
@@ -84,80 +88,83 @@ public class ResourceStorePostProcessor implements BeanPostProcessor {
         if (path.startsWith("/")) {
             path = path.substring(1);
         }
-        File[] files = getTemplatePathSubFiles(path);
+        List<String> files = getTemplatePathSubFiles(path);
         String finalPath = path;
-        return Arrays.stream(files).filter(this::isPicture).map(file -> {
-            int index = file.getAbsolutePath().indexOf(finalPath);
-            return file.getAbsolutePath().substring(index);
+        return StreamUtil.ofNullable(files).filter(this::isBackgroundPicture).map(file -> {
+            int index = file.indexOf(finalPath);
+            return file.substring(index);
         }).collect(Collectors.toList());
     }
 
-    private ResourceMap buildResourceMapWithFile(String templatePath, File firstLevalFile) {
-        if (!firstLevalFile.isDirectory()) {
-            log.warn("template first level file is not a directory: {}", firstLevalFile.getAbsolutePath());
-            return null;
+    private List<ResourceMap> buildResourceMapWithFilepathList(String templatePath, List<String> filepathList) {
+        if (CollectionUtils.isEmpty(filepathList)) {
+            log.warn("template directory empty: {}", templatePath);
+            throw new BizException(ExceptionEnum.SYSTEM_ERROR);
         }
-        File[] secondLevelFiles = firstLevalFile.listFiles();
-        if (secondLevelFiles == null || secondLevelFiles.length < 2) {
-            log.warn("template first level file is valid: {}", templatePath);
-            return null;
-        }
-        ResourceMap template = new ResourceMap("default", 2);
-        for (File secondLevelFile : secondLevelFiles) {
-            if (Objects.equals(secondLevelFile.getName(), StandardRotateImageCaptchaGenerator.TEMPLATE_ACTIVE_IMAGE_NAME)) {
-                int index = secondLevelFile.getAbsolutePath().indexOf(templatePath);
-                String templateFilePath = secondLevelFile.getAbsolutePath().substring(index);
-                template.put(StandardRotateImageCaptchaGenerator.TEMPLATE_ACTIVE_IMAGE_NAME, new Resource(ClassPathResourceProvider.NAME, templateFilePath));
+        // 去掉 templatePath 本身，然后按照上级路径分组
+        Map<String, List<String>> map = filepathList.stream().filter(path -> !Objects.equals(templatePath, path))
+                .collect(Collectors.groupingBy(path -> path.substring(0, path.lastIndexOf("/"))));
+        return map.values().stream().map(strings -> {
+            ResourceMap template = new ResourceMap("default", 2);
+            for (String path : strings) {
+                if (path.endsWith(StandardRotateImageCaptchaGenerator.TEMPLATE_ACTIVE_IMAGE_NAME)) {
+                    template.put(StandardRotateImageCaptchaGenerator.TEMPLATE_ACTIVE_IMAGE_NAME, new Resource(ClassPathResourceProvider.NAME, path));
+                } else if (path.endsWith(StandardRotateImageCaptchaGenerator.TEMPLATE_FIXED_IMAGE_NAME)) {
+                    template.put(StandardRotateImageCaptchaGenerator.TEMPLATE_FIXED_IMAGE_NAME, new Resource(ClassPathResourceProvider.NAME, path));
+                }
             }
-            if (Objects.equals(secondLevelFile.getName(), StandardRotateImageCaptchaGenerator.TEMPLATE_FIXED_IMAGE_NAME)) {
-                int index = secondLevelFile.getAbsolutePath().indexOf(templatePath);
-                String templateFilePath = secondLevelFile.getAbsolutePath().substring(index);
-                template.put(StandardRotateImageCaptchaGenerator.TEMPLATE_FIXED_IMAGE_NAME, new Resource(ClassPathResourceProvider.NAME, templateFilePath));
+            if (MapUtils.isEmpty(template.getResourceMap()) || template.getResourceMap().size() < 2) {
+                return null;
             }
-        }
-        if (template.getResourceMap().size() != 2) {
-            log.warn("template first level file is valid: {}", templatePath);
-            return null;
-        }
-        return template;
+            return template;
+        }).filter(Objects::nonNull).toList();
     }
 
     /**
-     * 判断文件是否是图片
+     * 判断文件是否是校验器的背景图片
      *
-     * @param file 文件
+     * @param filepath 文件名
      * @return true｜false
      */
-    private boolean isPicture(File file) {
-        return file.getName().endsWith(".jpg");
+    private boolean isBackgroundPicture(String filepath) {
+        return filepath.endsWith(".jpg");
     }
 
     /**
-     * 获取文件路径下的文件列表
+     * 获取文件路径下的文件路径列表
      *
      * @param path path
-     * @return File[]
+     * @return 文件路径列表
      */
-    private static File[] getTemplatePathSubFiles(String path) {
+    private List<String> getTemplatePathSubFiles(String path) {
         URL resource = Thread.currentThread().getContextClassLoader().getResource(path);
         if (resource == null) {
             log.error("template path invalid: {}", path);
             throw new BizException(ExceptionEnum.SYSTEM_ERROR);
         }
-        File file = new File(resource.getFile());
-        if (!file.exists()) {
-            log.error("template file not found: {}", path);
+        String resourcePath = resource.getPath();
+        if (resourcePath.contains(".jar!")) {
+            if (resourcePath.startsWith("file:")) {
+                resourcePath = resourcePath.substring(5, resourcePath.indexOf(".jar!") + 4);
+            }
+            try (JarFile jarFile = new JarFile(resourcePath);) {
+                return jarFile.stream()
+                        .map(JarEntry::getRealName)
+                        .filter(name -> name.startsWith(path) && !Objects.equals(name, path))
+                        .toList();
+            } catch (IOException e) {
+                log.error("template path invalid: {}", path, e);
+                throw new BizException(ExceptionEnum.SYSTEM_ERROR);
+            }
+        }
+        try (Stream<Path> pathStream = Files.walk(Path.of(resourcePath))) {
+            return pathStream.map(Path::toFile)
+                    .map(pathFile -> pathFile.getAbsolutePath() + (pathFile.isDirectory() ? "/" : ""))
+                    .filter(name -> name.contains(path)).map(name -> name.substring(name.indexOf(path)))
+                    .toList();
+        } catch (IOException e) {
+            log.error("template path invalid: {}", path, e);
             throw new BizException(ExceptionEnum.SYSTEM_ERROR);
         }
-        if (!file.isDirectory()) {
-            log.error("template file is not a directory: {}", path);
-            throw new BizException(ExceptionEnum.SYSTEM_ERROR);
-        }
-        File[] files = file.listFiles();
-        if (files == null || files.length == 0) {
-            log.error("template file is empty: {}", path);
-            throw new BizException(ExceptionEnum.SYSTEM_ERROR);
-        }
-        return files;
     }
 }

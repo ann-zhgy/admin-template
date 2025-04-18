@@ -40,6 +40,12 @@ public class FrontendPageDO implements Serializable {
     private String componentKey;
 
     /**
+     * 是否静态页面
+     */
+    @TableField(value = "static_page")
+    private boolean staticPage = false;
+
+    /**
      * 父级菜单编码
      */
     @TableField(value = "parent_no")

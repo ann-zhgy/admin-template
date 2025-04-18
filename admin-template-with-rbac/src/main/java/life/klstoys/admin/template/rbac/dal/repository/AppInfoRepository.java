@@ -13,7 +13,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -70,18 +69,8 @@ public class AppInfoRepository extends BaseRepository<AppInfoMapper, AppInfoDO> 
     }
 
     @Override
-    public int updateById(AppInfoDO entity) {
+    public void updateById(AppInfoDO entity) {
         redisRepository.removeCache(entity.getAppKey());
-        return super.updateById(entity);
-    }
-
-    @Override
-    public int deleteById(Serializable id) {
-        AppInfoDO appInfoDO = selectById(id);
-        if (Objects.isNull(appInfoDO)) {
-            return 0;
-        }
-        redisRepository.removeCache(appInfoDO.getAppKey());
-        return super.deleteById(id);
+        super.updateById(entity);
     }
 }

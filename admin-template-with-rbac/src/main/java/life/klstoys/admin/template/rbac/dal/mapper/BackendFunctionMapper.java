@@ -2,6 +2,7 @@ package life.klstoys.admin.template.rbac.dal.mapper;
 
 import life.klstoys.admin.template.config.mybatis.plus.WithBatchInsertBaseMapper;
 import life.klstoys.admin.template.rbac.dal.domain.BackendFunctionDO;
+import life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -12,5 +13,5 @@ public interface BackendFunctionMapper extends WithBatchInsertBaseMapper<Backend
 
     List<BackendFunctionDO> selectByGroupNo(@Param("groupNo") String groupNo);
 
-    Set<Long> selectUserIdsByFunctionNo(@Param("functionNo") String functionNo);
+    Set<UserAppKeyDO> selectUserIdsByFunctionNo(@Param("functionNo") String functionNo);
 }

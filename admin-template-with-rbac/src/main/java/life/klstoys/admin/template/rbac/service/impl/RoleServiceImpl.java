@@ -20,6 +20,7 @@ import life.klstoys.admin.template.rbac.dal.repository.RoleMenuRepository;
 import life.klstoys.admin.template.rbac.dal.repository.RoleRepository;
 import life.klstoys.admin.template.rbac.dal.repository.UserRepository;
 import life.klstoys.admin.template.rbac.dal.repository.UserRoleRepository;
+import life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO;
 import life.klstoys.admin.template.rbac.entity.RoleInfoEntity;
 import life.klstoys.admin.template.rbac.entity.UserInfoEntity;
 import life.klstoys.admin.template.rbac.exceptions.RbacExceptionEnum;
@@ -112,9 +113,7 @@ public class RoleServiceImpl implements RoleService {
         CommonUtil.callSetterIfParamNotBlank(roleDO::setNameZh, request.getNameZh());
         CommonUtil.callSetterIfParamNotBlank(roleDO::setDescription, request.getDescription());
         roleRepository.updateById(roleDO);
-        if (CollectionUtils.isNotEmpty(request.getMenuNos())) {
-            bindMenus(roleDO, request.getMenuNos());
-        }
+        bindMenus(roleDO, request.getMenuNos());
     }
 
     @Override
@@ -126,7 +125,7 @@ public class RoleServiceImpl implements RoleService {
         }
         roleRepository.deleteById(id);
         userRoleRepository.deleteByRole(roleDO.getNo());
-        refreshUserCache(roleDO.getNo());
+        refreshUserCache(roleDO);
     }
 
     @Override
@@ -138,7 +137,7 @@ public class RoleServiceImpl implements RoleService {
         }
         roleDO.setStatus(CommonStatusEnum.DISABLE);
         roleRepository.updateById(roleDO);
-        refreshUserCache(roleDO.getNo());
+        refreshUserCache(roleDO);
     }
 
     @Override
@@ -150,7 +149,7 @@ public class RoleServiceImpl implements RoleService {
         }
         roleDO.setStatus(CommonStatusEnum.ENABLE);
         roleRepository.updateById(roleDO);
-        refreshUserCache(roleDO.getNo());
+        refreshUserCache(roleDO);
     }
 
     @Override
@@ -182,23 +181,22 @@ public class RoleServiceImpl implements RoleService {
         return PageHelperUtil.convertToPage(pageInfo, UserConverter.INSTANCE::convertDOToEntity);
     }
 
-
     private void bindMenus(RoleDO roleDO, Set<String> functionGroupNos) {
-        List<FunctionGroupDO> functionGroupDOS = functionGroupRepository.selectByAppKeyAndNos(roleDO.getAppKey(), functionGroupNos);
-        if (CollectionUtils.isEmpty(functionGroupDOS)) {
-            throw new BizException(RbacExceptionEnum.MENU_MAP_INVALID);
-        }
-        List<RoleMenuDO> list = functionGroupDOS.stream()
-                .filter(item -> Objects.equals(item.getAppKey(), roleDO.getAppKey()))
-                .map(item -> RoleConverter.INSTANCE.buildRoleMenu(roleDO.getNo(), item)).toList();
         roleMenuRepository.deleteByRoleNo(roleDO.getNo());
-        roleMenuRepository.batchInsert(list);
-        refreshUserCache(roleDO.getNo());
+        if (CollectionUtils.isNotEmpty(functionGroupNos)) {
+            List<FunctionGroupDO> functionGroupDOS = functionGroupRepository.selectByAppKeyAndNos(roleDO.getAppKey(), functionGroupNos);
+            List<RoleMenuDO> list = functionGroupDOS.stream()
+                    .filter(item -> Objects.equals(item.getAppKey(), roleDO.getAppKey()))
+                    .map(item -> RoleConverter.INSTANCE.buildRoleMenu(roleDO.getNo(), item)).toList();
+            roleMenuRepository.batchInsert(list);
+        }
+        refreshUserCache(roleDO);
     }
 
-    private void refreshUserCache(String roleNo) {
-        List<UserDO> list = userRepository.queryByRoleNo(roleNo);
+    private void refreshUserCache(RoleDO role) {
+        List<UserDO> list = userRepository.queryByRoleNo(role.getNo());
         Set<Long> userIds = list.stream().map(UserDO::getId).collect(Collectors.toSet());
-        userService.refreshUserCache(userIds);
+        Set<UserAppKeyDO> userAppKeys = userIds.stream().map(item -> UserAppKeyDO.of(item, role.getAppKey())).collect(Collectors.toSet());
+        userService.refreshUserCache(userAppKeys);
     }
 }

@@ -24,7 +24,8 @@ public class UserAppRepository extends BaseRepository<UserAppMapper, UserAppDO> 
             return;
         }
         QueryWrapper<UserAppDO> queryWrapper = new QueryWrapper<>();
-        queryWrapper.lambda().eq(UserAppDO::getUsername, username)
+        queryWrapper.lambda()
+                .eq(UserAppDO::getUsername, username)
                 .in(UserAppDO::getAppKey, appKeys);
         getBaseMapper().delete(queryWrapper);
     }
@@ -37,5 +38,14 @@ public class UserAppRepository extends BaseRepository<UserAppMapper, UserAppDO> 
         queryWrapper.lambda().eq(UserAppDO::getUsername, username);
         List<UserAppDO> userAppDOS = getBaseMapper().selectList(queryWrapper);
         return userAppDOS.stream().map(UserAppDO::getAppKey).collect(Collectors.toSet());
+    }
+
+    public boolean hasAppPermission(String username, String appKey) {
+        if (StringUtils.isBlank(username) || StringUtils.isBlank(appKey)) {
+            return false;
+        }
+        QueryWrapper<UserAppDO> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(UserAppDO::getUsername, username).eq(UserAppDO::getAppKey, appKey);
+        return getBaseMapper().selectCount(queryWrapper) > 0;
     }
 }

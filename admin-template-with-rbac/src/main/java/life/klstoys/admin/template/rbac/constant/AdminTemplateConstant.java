@@ -28,7 +28,8 @@ public interface AdminTemplateConstant {
     /** 异步任务默认超时时间 */
     int ASYNC_TASK_TIMEOUT = 15;
     /** 页面访问权限功能组名称 */
-    String PAGE_ACCESS_AUTH_GROUP_NAME = "页面访问权限";
+    String PAGE_ACCESS_AUTH_GROUP_NAME = "页面访问权限: ";
     /** 登录用户基础鉴权功能组编号 */
     String LOGIN_USER_BASIC_AUTH = "202501201042364192c373fc0";
+    String HEADER_APPKEY_KEY = "appkey";
 }

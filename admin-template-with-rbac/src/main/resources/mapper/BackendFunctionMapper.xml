@@ -56,8 +56,8 @@
         where function_group_map.group_no = #{groupNo}
     </select>
 
-    <select id="selectUserIdsByFunctionNo" resultType="java.lang.Long">
-        select user.id
+    <select id="selectUserIdsByFunctionNo" resultType="life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO">
+        select user.id as userId, role.app_key as appKey
         from function_group_map
                  inner join function_group
                             on function_group.status = 1 and function_group.no = function_group_map.group_no

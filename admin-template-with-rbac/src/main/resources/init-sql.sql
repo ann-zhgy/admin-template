@@ -47,10 +47,10 @@ CREATE TABLE `role`
   COLLATE = utf8mb4_0900_ai_ci COMMENT ='角色信息';
 
 INSERT INTO role (no, name, name_zh, description, app_key, status, creator, updater)
-VALUES ('2024121816420053594d7d550', 'basic', '基本角色', null, 'admin-template', 1, 'super-admin',
-        'super-admin'),
-       ('2024121816420053758022525', 'admin', '管理员', null, 'admin-template', 1, 'super-admin',
-        'super-admin');
+VALUES ('2024121816420053594d7d550', 'basic', '基本角色', null, 'admin-template', 1, 'admin',
+        'admin'),
+       ('2024121816420053758022525', 'admin', '管理员', null, 'admin-template', 1, 'admin',
+        'admin');
 
 CREATE TABLE `frontend_page`
 (
@@ -58,6 +58,7 @@ CREATE TABLE `frontend_page`
     `no`            varchar(32)     NOT NULL COMMENT '菜单编码',
     `title`         varchar(32)     NOT NULL COMMENT '菜单标题',
     `component_key` varchar(32)     NOT NULL COMMENT '前端组件key',
+    `static_page`   tinyint         NOT NULL DEFAULT 0 COMMENT '是否是静态页面。1-是，0-不是',
     `parent_no`     varchar(32)     NULL COMMENT '父级菜单编码',
     `app_key`       varchar(256)    NOT NULL COMMENT '系统标识',
     `status`        tinyint         NOT NULL COMMENT '状态。1-使用中，2-已停用',
@@ -205,7 +206,7 @@ CREATE TABLE `function_group`
     `title`            varchar(32)     NOT NULL COMMENT '功能组标题',
     `app_key`          varchar(256)    NOT NULL COMMENT '系统标识',
     `frontend_page_no` varchar(32)     NOT NULL COMMENT 'web组件编号',
-    `group_call_type`  tinyint         NOT NULL COMMENT '组调用类型：1-页面初始化就调用，2-通过按钮、链接等调用',
+    `group_call_type`  tinyint         NOT NULL COMMENT '组调用类型：1-页面初始化就调用，2-通过按钮、链接等调用，3-静态页面',
     `status`           tinyint         NOT NULL COMMENT '状态。1-使用中，2-已停用',
     `creator`          varchar(64)     NOT NULL COMMENT '创建人',
     `create_time`      datetime        NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',

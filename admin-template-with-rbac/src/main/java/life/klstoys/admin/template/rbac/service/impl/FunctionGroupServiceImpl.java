@@ -17,6 +17,7 @@ import life.klstoys.admin.template.rbac.dal.repository.BackendFunctionRepository
 import life.klstoys.admin.template.rbac.dal.repository.FrontendPageRepository;
 import life.klstoys.admin.template.rbac.dal.repository.FunctionGroupMapRepository;
 import life.klstoys.admin.template.rbac.dal.repository.FunctionGroupRepository;
+import life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO;
 import life.klstoys.admin.template.rbac.entity.FunctionGroupEntity;
 import life.klstoys.admin.template.rbac.exceptions.RbacExceptionEnum;
 import life.klstoys.admin.template.rbac.service.FunctionGroupService;
@@ -66,7 +67,7 @@ public class FunctionGroupServiceImpl implements FunctionGroupService {
         }
         AppInfoDO appInfoDO = appInfoRepository.selectByAppKey(functionGroupDO.getAppKey());
         List<BackendFunctionDO> functionDOS = functionRepository.selectByGroupNo(functionGroupDO.getNo());
-        return FunctionGroupConverter.INSTANCE.buildEntity(functionGroupDO, appInfoDO, functionDOS);
+        return FunctionGroupConverter.INSTANCE.buildEntity(functionGroupDO, appInfoDO, null, functionDOS);
     }
 
     @Override
@@ -82,7 +83,10 @@ public class FunctionGroupServiceImpl implements FunctionGroupService {
         Set<String> appKeys = pageInfo.getList().stream().map(FunctionGroupDO::getAppKey).collect(Collectors.toSet());
         List<AppInfoDO> appInfoDOS = appInfoRepository.selectByAppKeys(appKeys);
         Map<String, AppInfoDO> appInfoDOMap = appInfoDOS.stream().collect(Collectors.toMap(AppInfoDO::getAppKey, Function.identity()));
-        return PageHelperUtil.convertToPage(pageInfo, item -> FunctionGroupConverter.INSTANCE.buildEntity(item, appInfoDOMap.get(item.getAppKey()), null));
+        Set<String> frontendPageNos = pageInfo.getList().stream().map(FunctionGroupDO::getFrontendPageNo).collect(Collectors.toSet());
+        List<FrontendPageDO> frontendPageDOS = frontendPageRepository.selectByNos(frontendPageNos);
+        Map<String, FrontendPageDO> frontendPageDOMap = frontendPageDOS.stream().collect(Collectors.toMap(FrontendPageDO::getNo, Function.identity()));
+        return PageHelperUtil.convertToPage(pageInfo, item -> FunctionGroupConverter.INSTANCE.buildEntity(item, appInfoDOMap.get(item.getAppKey()), frontendPageDOMap.get(item.getFrontendPageNo()), null));
     }
 
     @Override
@@ -182,7 +186,7 @@ public class FunctionGroupServiceImpl implements FunctionGroupService {
     }
 
     private void refreshUserCache(String menuNo) {
-        Set<Long> userIds = frontendPageRepository.selectUserIdsByMenuNo(menuNo);
-        userService.refreshUserCache(userIds);
+        Set<UserAppKeyDO> userAppKeyDOS = frontendPageRepository.selectUserIdsByMenuNo(menuNo);
+        userService.refreshUserCache(userAppKeyDOS);
     }
 }

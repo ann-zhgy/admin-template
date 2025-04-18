@@ -5,11 +5,14 @@ import life.klstoys.admin.template.config.mybatis.plus.BaseRepository;
 import life.klstoys.admin.template.rbac.dal.domain.RoleDO;
 import life.klstoys.admin.template.rbac.dal.mapper.RoleMapper;
 import life.klstoys.admin.template.rbac.web.controller.request.role.RoleListRequest;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * @author zhanggaoyu@workatdata.com
@@ -34,5 +37,28 @@ public class RoleRepository extends BaseRepository<RoleMapper, RoleDO> {
                 .eq(Objects.nonNull(request.getAppKey()), RoleDO::getAppKey, request.getAppKey())
                 .orderByAsc(RoleDO::getId);
         return getBaseMapper().selectList(queryWrapper);
+    }
+
+    public List<RoleDO> selectByIds(Set<Long> roleIds) {
+        if (CollectionUtils.isEmpty(roleIds)) {
+            return Collections.emptyList();
+        }
+        return getBaseMapper().selectBatchIds(roleIds);
+    }
+
+    public List<RoleDO> selectBasicRoleByAppKey(String appKey) {
+        if (StringUtils.isBlank(appKey)) {
+            return Collections.emptyList();
+        }
+        QueryWrapper<RoleDO> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().eq(RoleDO::getAppKey, appKey).eq(RoleDO::getBasicRole, true);
+        return getBaseMapper().selectList(queryWrapper);
+    }
+
+    public Set<String> queryRoleAppkeyByUsername(String username) {
+        if (StringUtils.isBlank(username)) {
+            return Collections.emptySet();
+        }
+        return getBaseMapper().queryRoleAppkeyByUsername(username);
     }
 }

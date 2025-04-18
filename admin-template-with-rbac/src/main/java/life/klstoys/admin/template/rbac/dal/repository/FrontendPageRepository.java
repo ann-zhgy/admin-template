@@ -4,11 +4,15 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import life.klstoys.admin.template.config.mybatis.plus.BaseRepository;
 import life.klstoys.admin.template.rbac.dal.domain.FrontendPageDO;
 import life.klstoys.admin.template.rbac.dal.mapper.FrontendPageMapper;
+import life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO;
 import life.klstoys.admin.template.rbac.web.controller.request.menu.MenuListRequest;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -56,10 +60,20 @@ public class FrontendPageRepository extends BaseRepository<FrontendPageMapper, F
         return getBaseMapper().selectList(queryWrapper);
     }
 
-    public Set<Long> selectUserIdsByMenuNo(String menuNo) {
+    public Set<UserAppKeyDO> selectUserIdsByMenuNo(String menuNo) {
         if (StringUtils.isBlank(menuNo)) {
             return Collections.emptySet();
         }
         return getBaseMapper().selectUserIdsByMenuNo(menuNo);
+    }
+
+    public List<FrontendPageDO> selectByNos(Collection<String> frontendPageNos) {
+        if (CollectionUtils.isEmpty(frontendPageNos)) {
+            return Collections.emptyList();
+        }
+        Set<String> frontendPageNoSet = new HashSet<>(frontendPageNos);
+        QueryWrapper<FrontendPageDO> queryWrapper = new QueryWrapper<>();
+        queryWrapper.lambda().in(FrontendPageDO::getNo, frontendPageNoSet);
+        return getBaseMapper().selectList(queryWrapper);
     }
 }

@@ -28,7 +28,7 @@
         `user`.update_time
     </sql>
 
-    <select id="queryByRoleId" resultMap="BaseResultMap">
+    <select id="queryByRoleNo" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from `user`

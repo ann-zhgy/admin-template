@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import life.klstoys.admin.template.config.mybatis.plus.BaseRepository;
 import life.klstoys.admin.template.rbac.dal.domain.BackendFunctionDO;
 import life.klstoys.admin.template.rbac.dal.mapper.BackendFunctionMapper;
+import life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO;
 import life.klstoys.admin.template.rbac.web.controller.request.function.FunctionListRequest;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -64,7 +65,7 @@ public class BackendFunctionRepository extends BaseRepository<BackendFunctionMap
         return getBaseMapper().selectList(queryWrapper);
     }
 
-    public Set<Long> selectUserIdsByFunctionNo(String functionNo) {
+    public Set<UserAppKeyDO> selectUserIdsByFunctionNo(String functionNo) {
         if (StringUtils.isBlank(functionNo)) {
             return Collections.emptySet();
         }

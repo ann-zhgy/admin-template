@@ -3,9 +3,9 @@ package life.klstoys.admin.template.rbac.dal.repository;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import life.klstoys.admin.template.config.mybatis.plus.BaseRepository;
 import life.klstoys.admin.template.exception.BizException;
-import life.klstoys.admin.template.exception.ExceptionEnum;
 import life.klstoys.admin.template.rbac.dal.domain.UserRoleDO;
 import life.klstoys.admin.template.rbac.dal.mapper.UserRoleMapper;
+import life.klstoys.admin.template.rbac.exceptions.RbacExceptionEnum;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 public class UserRoleRepository extends BaseRepository<UserRoleMapper, UserRoleDO> {
     public void deleteByUsernameAndRoleNos(String username, Set<String> existRoleNos) {
         if (StringUtils.isBlank(username) || CollectionUtils.isEmpty(existRoleNos)) {
-            throw new BizException(ExceptionEnum.PARAM_INVALID, "传入参数为空");
+            throw new BizException(RbacExceptionEnum.PARAM_INVALID, "传入参数为空");
         }
         QueryWrapper<UserRoleDO> queryWrapper = new QueryWrapper<>();
         queryWrapper.lambda().eq(UserRoleDO::getUsername, username).in(UserRoleDO::getRoleNo, existRoleNos);

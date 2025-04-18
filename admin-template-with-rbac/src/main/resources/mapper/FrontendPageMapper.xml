@@ -8,6 +8,7 @@
         <result column="no" jdbcType="VARCHAR" property="no"/>
         <result column="title" jdbcType="VARCHAR" property="title"/>
         <result column="component_key" jdbcType="VARCHAR" property="componentKey"/>
+        <result column="static_page" jdbcType="VARCHAR" property="staticPage"/>
         <result column="parent_no" jdbcType="VARCHAR" property="parentNo"/>
         <result column="app_key" jdbcType="VARCHAR" property="appKey"/>
         <result column="status" jdbcType="TINYINT" property="status"
@@ -23,6 +24,7 @@
         frontend_page.`no`,
         frontend_page.title,
         frontend_page.component_key,
+        frontend_page.static_page,
         frontend_page.parent_no,
         frontend_page.app_key,
         frontend_page.`status`,
@@ -99,8 +101,8 @@
         </if>
     </select>
 
-    <select id="selectUserIdsByMenuNo" resultType="java.lang.Long">
-        select user.id
+    <select id="selectUserIdsByMenuNo" resultType="life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO">
+        select user.id as userId, role.app_key as appKey
         from role_menu
                  inner join role
                             on role_menu.role_no = role.no and role.status = 1 and

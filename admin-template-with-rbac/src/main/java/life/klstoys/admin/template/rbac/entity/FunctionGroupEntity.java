@@ -41,6 +41,11 @@ public class FunctionGroupEntity {
     private String frontendPageNo;
 
     /**
+     * 前端页面编码
+     */
+    private MenuInfoEntity frontendPage;
+
+    /**
      * 功能组类型。1-菜单，2-按钮或链接
      */
     private GroupCallTypeEnum groupCallType;

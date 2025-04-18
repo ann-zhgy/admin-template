@@ -6,7 +6,6 @@ import life.klstoys.admin.template.exception.ExceptionEnum;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +54,7 @@ public abstract class BaseRepository<M extends WithBatchInsertBaseMapper<T>, T> 
             List<T> list = partition.get(i);
             Integer insertRow = getBaseMapper().insertBatchSomeColumn(list);
             if (insertRow != list.size()) {
-                log.error("第 {} 批次插入数据库失败，应插入数据条数：{}，实际插入数据条数：{}", i + 1, list.size(), insertRow);
+                log.error("第 {} 批次插入数据库失败，应插入数据条数：{}", i + 1, list.size());
                 throw new BizException(ExceptionEnum.DATABASE_INSERT_ROW_ERROR);
             }
         }
@@ -71,28 +70,35 @@ public abstract class BaseRepository<M extends WithBatchInsertBaseMapper<T>, T> 
         batchInsert(entities, DEFAULT_BATCH_SIZE);
     }
 
-    public int updateById(T entity) {
-        return getBaseMapper().updateById(entity);
+    public void updateById(T entity) {
+        if (Objects.isNull(entity)) {
+            log.error("要更新的数据为null");
+            throw new BizException(ExceptionEnum.DATABASE_UPDATE_DATA_NULL);
+        }
+        int updateRow = getBaseMapper().updateById(entity);
+        if (updateRow < 1) {
+            log.error("更新数据失败");
+            throw new BizException(ExceptionEnum.DATABASE_UPDATE_ROW_ERROR);
+        }
     }
 
     public T selectById(Serializable id) {
         if (Objects.isNull(id)) {
+            log.warn("要查询的数据id为空");
             return null;
         }
         return getBaseMapper().selectById(id);
     }
 
-    public List<T> selectByIds(Collection<? extends Serializable> idList) {
-        if (CollectionUtils.isEmpty(idList)) {
-            return new ArrayList<>();
-        }
-        return getBaseMapper().selectBatchIds(idList);
-    }
-
-    public int deleteById(Serializable id) {
+    public void deleteById(Serializable id) {
         if (Objects.isNull(id)) {
-            return 0;
+            log.warn("要删除的数据id为空");
+            throw new BizException(ExceptionEnum.DATABASE_DELETE_DATA_NULL);
         }
-        return getBaseMapper().deleteById(id);
+        int deleteRow = getBaseMapper().deleteById(id);
+        if (deleteRow < 1) {
+            log.error("删除数据失败");
+            throw new BizException(ExceptionEnum.DATABASE_DELETE_ROW_ERROR);
+        }
     }
 }

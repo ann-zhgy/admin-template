@@ -2,6 +2,7 @@ package life.klstoys.admin.template.rbac.dal.mapper;
 
 import life.klstoys.admin.template.config.mybatis.plus.WithBatchInsertBaseMapper;
 import life.klstoys.admin.template.rbac.dal.domain.FrontendPageDO;
+import life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO;
 import life.klstoys.admin.template.rbac.web.controller.request.menu.MenuListRequest;
 
 import java.util.List;
@@ -27,5 +28,5 @@ public interface FrontendPageMapper extends WithBatchInsertBaseMapper<FrontendPa
     /**
      * 根据菜单编号查询用户ID
      */
-    Set<Long> selectUserIdsByMenuNo(String menuNo);
+    Set<UserAppKeyDO> selectUserIdsByMenuNo(String menuNo);
 }

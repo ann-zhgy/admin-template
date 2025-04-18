@@ -26,6 +26,7 @@ import life.klstoys.admin.template.rbac.dal.repository.RoleRepository;
 import life.klstoys.admin.template.rbac.dal.repository.UserAppRepository;
 import life.klstoys.admin.template.rbac.dal.repository.UserRepository;
 import life.klstoys.admin.template.rbac.dal.repository.UserRoleRepository;
+import life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO;
 import life.klstoys.admin.template.rbac.dal.support.domain.UserAuthorInfoDO;
 import life.klstoys.admin.template.rbac.entity.EndPointMenuInfoEntity;
 import life.klstoys.admin.template.rbac.entity.RoleInfoEntity;
@@ -195,7 +196,8 @@ public class UserServiceImpl implements UserService {
         }
         userInfo.setStatus(CommonStatusEnum.DISABLE);
         userRepository.updateById(userInfo);
-        redisRepository.removeTokenById(userInfo.getId());
+        Set<String> appkeySet = roleRepository.queryRoleAppkeyByUsername(userInfo.getUsername());
+        appkeySet.forEach(appkey -> redisRepository.removeTokenById(appkey, userInfo.getId()));
     }
 
     @Override
@@ -214,7 +216,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void logout() {
-        redisRepository.removeToken(RequestContext.getToken());
+        redisRepository.removeToken(RequestContext.getUserInfo().getAppKey(), RequestContext.getToken());
     }
 
     @Override
@@ -365,11 +367,12 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void refreshUserCache(Set<Long> userIds) {
-        if (CollectionUtils.isEmpty(userIds)) {
+    public void refreshUserCache(Set<UserAppKeyDO> userAppKeys) {
+        if (CollectionUtils.isEmpty(userAppKeys)) {
             return;
         }
-        redisRepository.batchDisableToken(userIds);
+        Map<String, Set<Long>> appkeyUserIdMap = userAppKeys.stream().collect(Collectors.groupingBy(UserAppKeyDO::getAppKey, Collectors.mapping(UserAppKeyDO::getUserId, Collectors.toSet())));
+        appkeyUserIdMap.forEach(redisRepository::batchDisableToken);
     }
 
     @Override
@@ -379,7 +382,7 @@ public class UserServiceImpl implements UserService {
             throw new BizException(RbacExceptionEnum.APP_NOT_EXISTS);
         }
         if (appInfoDO.getStatus() != CommonStatusEnum.ENABLE) {
-            throw new BizException(RbacExceptionEnum.APP_DISABLE);
+            throw new BizException(RbacExceptionEnum.APP_DISABLED);
         }
         UserDO userDO = userRepository.selectById(userId);
         if (Objects.isNull(userDO)) {
@@ -396,6 +399,6 @@ public class UserServiceImpl implements UserService {
 
     private void cacheLoginUserAndToken(String token, Long userId, String appKey) {
         UserAuthorInfoDO loginInfo = queryUserAuthorInfo(userId, appKey);
-        redisRepository.setToken(token, loginInfo);
+        redisRepository.setToken(appKey, token, loginInfo);
     }
 }

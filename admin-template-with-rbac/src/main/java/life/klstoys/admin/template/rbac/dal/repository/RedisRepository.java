@@ -51,13 +51,13 @@ public class RedisRepository {
         return "cache-temp:" + key;
     }
 
-    public void setToken(String token, UserAuthorInfoDO loginInfo) {
-        redisTemplate.opsForValue().set(buildTokenKey(token), Objects.requireNonNull(JsonUtil.toJson(loginInfo)), TOKEN_EXPIRE, TimeUnit.SECONDS);
-        redisTemplate.opsForValue().set(buildTokenKey(String.valueOf(loginInfo.getId())), token, TOKEN_EXPIRE, TimeUnit.SECONDS);
+    public void setToken(String appkey, String token, UserAuthorInfoDO loginInfo) {
+        redisTemplate.opsForValue().set(buildTokenKey(appkey, token), Objects.requireNonNull(JsonUtil.toJson(loginInfo)), TOKEN_EXPIRE, TimeUnit.SECONDS);
+        redisTemplate.opsForValue().set(buildTokenKey(appkey, String.valueOf(loginInfo.getId())), token, TOKEN_EXPIRE, TimeUnit.SECONDS);
     }
 
-    public UserAuthorInfoDO getToken(String token) {
-        String json = redisTemplate.opsForValue().get(buildTokenKey(token));
+    public UserAuthorInfoDO getToken(String appkey, String token) {
+        String json = redisTemplate.opsForValue().get(buildTokenKey(appkey, token));
         UserAuthorInfoDO authorInfo = JsonUtil.fromJson(json, UserAuthorInfoDO.class);
         if (Objects.isNull(authorInfo)) {
             return null;
@@ -68,48 +68,48 @@ public class RedisRepository {
         try {
             UserAuthorInfoDO authorInfoDO = userService.queryUserAuthorInfo(authorInfo.getId(), authorInfo.getAppKey());
             if (Objects.isNull(authorInfoDO)) {
-                removeToken(token);
+                removeToken(appkey, token);
                 return null;
             }
-            redisTemplate.opsForValue().set(buildTokenKey(token), Objects.requireNonNull(JsonUtil.toJson(authorInfoDO)), TOKEN_EXPIRE, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(buildTokenKey(appkey, token), Objects.requireNonNull(JsonUtil.toJson(authorInfoDO)), TOKEN_EXPIRE, TimeUnit.SECONDS);
             return authorInfoDO;
         } catch (Exception e) {
             return null;
         }
     }
 
-    public void batchDisableToken(Set<Long> userIds) {
+    public void batchDisableToken(String appkey, Set<Long> userIds) {
         userIds.forEach(userId -> {
-            String token = redisTemplate.opsForValue().get(buildTokenKey(String.valueOf(userId)));
+            String token = redisTemplate.opsForValue().get(buildTokenKey(appkey, String.valueOf(userId)));
             if (StringUtils.isBlank(token)) {
                 return;
             }
-            String json = redisTemplate.opsForValue().get(buildTokenKey(token));
+            String json = redisTemplate.opsForValue().get(buildTokenKey(appkey, token));
             UserAuthorInfoDO authorInfo = JsonUtil.fromJson(json, UserAuthorInfoDO.class);
             if (Objects.isNull(authorInfo)) {
                 return;
             }
             authorInfo.setStatus(CommonStatusEnum.DISABLE);
-            redisTemplate.opsForValue().set(buildTokenKey(token), Objects.requireNonNull(JsonUtil.toJson(authorInfo)), TOKEN_EXPIRE, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(buildTokenKey(appkey, token), Objects.requireNonNull(JsonUtil.toJson(authorInfo)), TOKEN_EXPIRE, TimeUnit.SECONDS);
         });
     }
 
-    public void removeToken(String token) {
-        UserAuthorInfoDO user = getToken(token);
-        redisTemplate.delete(buildTokenKey(token));
+    public void removeToken(String appkey, String token) {
+        UserAuthorInfoDO user = getToken(appkey, token);
+        redisTemplate.delete(buildTokenKey(appkey, token));
         if (Objects.nonNull(user)) {
-            redisTemplate.delete(buildTokenKey(String.valueOf(user.getId())));
+            redisTemplate.delete(buildTokenKey(appkey, String.valueOf(user.getId())));
         }
     }
 
-    public void removeTokenById(long id) {
-        String token = redisTemplate.opsForValue().get(buildTokenKey(String.valueOf(id)));
-        redisTemplate.delete(buildTokenKey(token));
-        redisTemplate.delete(buildTokenKey(String.valueOf(id)));
+    public void removeTokenById(String appkey, long id) {
+        String token = redisTemplate.opsForValue().get(buildTokenKey(appkey, String.valueOf(id)));
+        redisTemplate.delete(buildTokenKey(appkey, token));
+        redisTemplate.delete(buildTokenKey(appkey, String.valueOf(id)));
     }
 
-    private String buildTokenKey(String token) {
-        return "token:" + token;
+    private String buildTokenKey(String appkey, String token) {
+        return "token:appkey:" + token;
     }
 
     public void setCaptcha(String captcha, String senderNo) {

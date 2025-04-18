@@ -37,7 +37,12 @@ public enum RbacExceptionEnum implements BaseExceptionType {
     FUNCTION_GROUP_UPDATE_APPKEY_NOT_MATCH("10023", "传入的功能与功能组的appKey不匹配"),
     ROLE_DISABLED("10024", "角色不可用"),
     USER_CACHE_NOT_EXISTS("10025", "账号缓存不可用"),
-    APP_DISABLE("10026", "appkey不可用"),
+    APP_DISABLED("10026", "appkey不可用"),
+    APPKEY_IS_BLANK("10027", "请求缺少appkey"),
+    UNKNOWN_APPKEY("10028", "未知应用标识"),
+
+    // 参数为空
+    PARAM_INVALID("20001", "参数不合法：%s"),
     ;
     private final String code;
     private final String message;

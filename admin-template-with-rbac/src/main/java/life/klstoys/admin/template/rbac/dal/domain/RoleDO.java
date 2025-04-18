@@ -58,6 +58,12 @@ public class RoleDO implements Serializable {
     private CommonStatusEnum status;
 
     /**
+     * 是否是基础角色；0-不是，1-是
+     */
+    @TableField(value = "`basic_role`")
+    private Boolean basicRole;
+
+    /**
      * 创建人
      */
     @TableField(value = "creator")

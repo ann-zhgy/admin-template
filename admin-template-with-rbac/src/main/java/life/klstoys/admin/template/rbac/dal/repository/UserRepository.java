@@ -84,6 +84,6 @@ public class UserRepository extends BaseRepository<UserMapper, UserDO> {
     }
 
     public List<UserDO> queryByRoleNo(String roleNo) {
-        return getBaseMapper().queryByRoleId(roleNo);
+        return getBaseMapper().queryByRoleNo(roleNo);
     }
 }

@@ -17,6 +17,7 @@ import life.klstoys.admin.template.rbac.dal.repository.AppInfoRepository;
 import life.klstoys.admin.template.rbac.dal.repository.FrontendPageRepository;
 import life.klstoys.admin.template.rbac.dal.repository.FunctionGroupRepository;
 import life.klstoys.admin.template.rbac.dal.repository.RoleMenuRepository;
+import life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO;
 import life.klstoys.admin.template.rbac.dal.support.domain.UserAuthorMenuDO;
 import life.klstoys.admin.template.rbac.entity.EndPointMenuInfoEntity;
 import life.klstoys.admin.template.rbac.entity.FunctionGroupEntity;
@@ -70,7 +71,6 @@ public class MenuServiceImpl implements MenuService {
     @Setter(onMethod_ = {@Autowired, @Lazy})
     private UserService userService;
 
-
     @Override
     public List<EndPointMenuInfoEntity> queryUserMenus(String username, String appKey) {
         List<UserAuthorMenuDO> authorMenuDOS = roleMenuRepository.selectByUserIdAndAppKey(username, appKey);
@@ -84,7 +84,7 @@ public class MenuServiceImpl implements MenuService {
         AppInfoDO appInfoDO = appInfoRepository.selectByAppKey(frontendPageDO.getAppKey());
         List<FunctionGroupDO> functionGroupDOList = functionGroupRepository.selectByPageNo(frontendPageDO.getNo());
         List<FunctionGroupEntity> functionGroupEntities = functionGroupDOList.stream()
-                .map(item -> FunctionGroupConverter.INSTANCE.buildEntity(item, appInfoDO, null))
+                .map(item -> FunctionGroupConverter.INSTANCE.buildEntity(item, appInfoDO, frontendPageDO, null))
                 .toList();
         return MenuConverter.INSTANCE.convertDOToEntity(frontendPageDO, appInfoDO, functionGroupEntities);
     }
@@ -110,8 +110,6 @@ public class MenuServiceImpl implements MenuService {
     public void save(MenuSaveOrUpdateRequest request) {
         FrontendPageDO frontendPageDO = MenuConverter.INSTANCE.convertRequestToDO(request);
         frontendPageRepository.insert(frontendPageDO);
-        FunctionGroupDO functionGroupDO = FunctionGroupConverter.INSTANCE.buildNoneDO(frontendPageDO);
-        functionGroupRepository.insert(functionGroupDO);
     }
 
     @Override
@@ -186,7 +184,7 @@ public class MenuServiceImpl implements MenuService {
             }
             List<FunctionGroupDO> functionGroupDOS = functionGroupDOSFuture.get(AdminTemplateConstant.ASYNC_TASK_TIMEOUT, TimeUnit.SECONDS);
             Map<String, List<FunctionGroupEntity>> functionMap = functionGroupDOS.stream()
-                    .map(item -> FunctionGroupConverter.INSTANCE.buildEntity(item, appInfoDO, null))
+                    .map(item -> FunctionGroupConverter.INSTANCE.buildEntity(item, appInfoDO, null, null))
                     .filter(this::isNotFrontEndPageFlagFunction)
                     .collect(Collectors.groupingBy(FunctionGroupEntity::getFrontendPageNo));
             List<MenuInfoEntity> menuInfoEntities = frontendPageDOS.stream()
@@ -211,8 +209,8 @@ public class MenuServiceImpl implements MenuService {
     }
 
     private void refreshUserCache(String menuNo) {
-        Set<Long> userIds = frontendPageRepository.selectUserIdsByMenuNo(menuNo);
-        userService.refreshUserCache(userIds);
+        Set<UserAppKeyDO> userAppKeyDOS = frontendPageRepository.selectUserIdsByMenuNo(menuNo);
+        userService.refreshUserCache(userAppKeyDOS);
     }
 
     private boolean isNotFrontEndPageFlagFunction(FunctionGroupEntity functionGroupEntity) {

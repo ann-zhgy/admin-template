@@ -29,6 +29,11 @@ public class MenuSaveOrUpdateRequest {
     private String componentKey;
 
     /**
+     * 是否是静态页面
+     */
+    private boolean staticPage = false;
+
+    /**
      * 父级菜单编码
      */
     private String parentNo;

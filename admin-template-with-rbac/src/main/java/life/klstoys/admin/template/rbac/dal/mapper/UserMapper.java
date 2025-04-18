@@ -7,5 +7,5 @@ import org.apache.ibatis.annotations.Param;
 import java.util.List;
 
 public interface UserMapper extends WithBatchInsertBaseMapper<UserDO> {
-    List<UserDO> queryByRoleId(@Param("roleNo") String roleNo);
+    List<UserDO> queryByRoleNo(@Param("roleNo") String roleNo);
 }

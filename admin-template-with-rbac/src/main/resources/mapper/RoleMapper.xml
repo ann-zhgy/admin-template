@@ -43,4 +43,12 @@
         </if>
         and role.status = 1
     </select>
+
+    <select id="queryRoleAppkeyByUsername" resultType="java.lang.String">
+        select distinct role.app_key
+        from role
+                 left join user_role on role.no = user_role.role_no and user_role.status = 1
+        where user_role.username = #{username}
+          and role.status = 1
+    </select>
 </mapper>

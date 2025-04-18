@@ -11,6 +11,7 @@ import life.klstoys.admin.template.rbac.dal.domain.AppInfoDO;
 import life.klstoys.admin.template.rbac.dal.domain.BackendFunctionDO;
 import life.klstoys.admin.template.rbac.dal.repository.AppInfoRepository;
 import life.klstoys.admin.template.rbac.dal.repository.BackendFunctionRepository;
+import life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO;
 import life.klstoys.admin.template.rbac.entity.FunctionInfoEntity;
 import life.klstoys.admin.template.rbac.exceptions.RbacExceptionEnum;
 import life.klstoys.admin.template.rbac.service.FunctionService;
@@ -131,7 +132,7 @@ public class FunctionServiceImpl implements FunctionService {
     }
 
     private void refreshUserCache(String functionNo) {
-        Set<Long> userIds = backendFunctionRepository.selectUserIdsByFunctionNo(functionNo);
-        userService.refreshUserCache(userIds);
+        Set<UserAppKeyDO> userAppKeyDOS = backendFunctionRepository.selectUserIdsByFunctionNo(functionNo);
+        userService.refreshUserCache(userAppKeyDOS);
     }
 }

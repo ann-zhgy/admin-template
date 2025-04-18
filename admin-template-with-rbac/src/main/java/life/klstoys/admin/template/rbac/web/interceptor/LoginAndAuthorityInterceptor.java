@@ -3,8 +3,11 @@ package life.klstoys.admin.template.rbac.web.interceptor;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import life.klstoys.admin.template.enums.CommonStatusEnum;
 import life.klstoys.admin.template.exception.BizException;
 import life.klstoys.admin.template.rbac.constant.AdminTemplateConstant;
+import life.klstoys.admin.template.rbac.dal.domain.AppInfoDO;
+import life.klstoys.admin.template.rbac.dal.repository.AppInfoRepository;
 import life.klstoys.admin.template.rbac.dal.repository.RedisRepository;
 import life.klstoys.admin.template.rbac.dal.support.domain.UserAuthorInfoDO;
 import life.klstoys.admin.template.rbac.exceptions.RbacExceptionEnum;
@@ -29,6 +32,8 @@ import java.util.Objects;
 public class LoginAndAuthorityInterceptor implements HandlerInterceptor {
     @Setter(onMethod_ = @Autowired)
     private RedisRepository redisRepository;
+    @Setter(onMethod_ = @Autowired)
+    private AppInfoRepository appInfoRepository;
 
     @Override
     public boolean preHandle(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull Object handler) throws Exception {
@@ -40,11 +45,24 @@ public class LoginAndAuthorityInterceptor implements HandlerInterceptor {
 //            response.setStatus(HttpStatus.BAD_REQUEST.value());
             throw new BizException(RbacExceptionEnum.TOKEN_IS_BLANK);
         }
-        UserAuthorInfoDO userInfo = redisRepository.getToken(token);
+        String appkey = request.getHeader(AdminTemplateConstant.HEADER_APPKEY_KEY);
+        if (StringUtils.isBlank(appkey)) {
+            throw new BizException(RbacExceptionEnum.APPKEY_IS_BLANK);
+        }
+        UserAuthorInfoDO userInfo = redisRepository.getToken(appkey, token);
         if (Objects.isNull(userInfo)) {
-            redisRepository.removeToken(token);
+            redisRepository.removeToken(appkey, token);
 //            response.setStatus(HttpStatus.UNAUTHORIZED.value());
             throw new BizException(RbacExceptionEnum.TOKEN_INVALID);
+        }
+        AppInfoDO appInfoDO = appInfoRepository.selectByAppKey(appkey);
+        if (Objects.isNull(appInfoDO)) {
+            redisRepository.removeToken(appkey, token);
+            throw new BizException(RbacExceptionEnum.UNKNOWN_APPKEY);
+        }
+        if (appInfoDO.getStatus() != CommonStatusEnum.ENABLE) {
+            redisRepository.removeToken(appkey, token);
+            throw new BizException(RbacExceptionEnum.APP_DISABLED);
         }
         // todo: 测试代码，系统数据构建完毕之后需删除
         if (Objects.equals(userInfo.getUsername(), "admin")) {
@@ -64,7 +82,7 @@ public class LoginAndAuthorityInterceptor implements HandlerInterceptor {
             RequestContext.setUserInfo(userInfo);
             return true;
         } catch (Exception e) {
-            redisRepository.removeToken(token);
+            redisRepository.removeToken(appkey, token);
 //            response.setStatus(HttpStatus.BAD_REQUEST.value());
             throw new BizException(RbacExceptionEnum.TOKEN_INVALID);
         }

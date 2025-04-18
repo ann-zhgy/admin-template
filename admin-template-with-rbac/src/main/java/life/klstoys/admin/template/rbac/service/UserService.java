@@ -2,6 +2,7 @@ package life.klstoys.admin.template.rbac.service;
 
 import life.klstoys.admin.template.common.request.PageRequest;
 import life.klstoys.admin.template.common.response.PageResult;
+import life.klstoys.admin.template.rbac.dal.support.domain.UserAppKeyDO;
 import life.klstoys.admin.template.rbac.dal.support.domain.UserAuthorInfoDO;
 import life.klstoys.admin.template.rbac.entity.RoleInfoEntity;
 import life.klstoys.admin.template.rbac.entity.UserInfoEntity;
@@ -172,9 +173,9 @@ public interface UserService {
     /**
      * 刷新用户缓存
      *
-     * @param userIds userIds
+     * @param userAppKeys userAppKeys
      */
-    void refreshUserCache(Set<Long> userIds);
+    void refreshUserCache(Set<UserAppKeyDO> userAppKeys);
 
     /**
      * 查询用户权限信息

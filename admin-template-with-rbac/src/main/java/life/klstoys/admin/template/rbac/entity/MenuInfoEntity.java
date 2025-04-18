@@ -30,11 +30,14 @@ public class MenuInfoEntity {
     private String componentKey;
 
     /**
+     * 是否静态页面
+     */
+    private boolean staticPage;
+
+    /**
      * 父级菜单编码
      */
     private String parentNo;
-
-
 
     /**
      * 系统标识

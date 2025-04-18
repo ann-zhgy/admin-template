@@ -25,7 +25,7 @@ import java.util.Optional;
  * @author zhanggaoyu@workatdata.com
  * @since 2025/1/17 13:13
  */
-@Mapper(imports = {Optional.class, AppInfoConverter.class, StreamUtil.class, CommonStatusEnum.class, CommonUtil.class, RequestContext.class, GroupCallTypeEnum.class, AdminTemplateConstant.class})
+@Mapper(imports = {Optional.class, AppInfoConverter.class, MenuConverter.class, StreamUtil.class, CommonStatusEnum.class, CommonUtil.class, RequestContext.class, GroupCallTypeEnum.class, AdminTemplateConstant.class})
 public interface FunctionGroupConverter {
     FunctionGroupConverter INSTANCE = Mappers.getMapper(FunctionGroupConverter.class);
 
@@ -42,19 +42,9 @@ public interface FunctionGroupConverter {
             @Mapping(target = "createTime", source = "functionGroupDO.createTime"),
             @Mapping(target = "updater", source = "functionGroupDO.updater"),
             @Mapping(target = "updateTime", source = "functionGroupDO.updateTime"),
+            @Mapping(target = "frontendPage", expression = "java(MenuConverter.INSTANCE.convertDOToEntity(frontendPageDO, null, null))")
     })
-    FunctionGroupEntity buildEntity(FunctionGroupDO functionGroupDO, AppInfoDO appInfoDO, List<BackendFunctionDO> functionDOS);
-
-    @Mappings({
-            @Mapping(target = "id", ignore = true),
-            @Mapping(target = "no", expression = "java(CommonUtil.generateNo())"),
-            @Mapping(target = "title", expression = "java(AdminTemplateConstant.PAGE_ACCESS_AUTH_GROUP_NAME)"),
-            @Mapping(target = "appKey", source = "frontendPageDO.appKey"),
-            @Mapping(target = "frontendPageNo", source = "frontendPageDO.no"),
-            @Mapping(target = "groupCallType", expression = "java(GroupCallTypeEnum.NONE)"),
-            @Mapping(target = "status", expression = "java(CommonStatusEnum.ENABLE)"),
-    })
-    FunctionGroupDO buildNoneDO(FrontendPageDO frontendPageDO);
+    FunctionGroupEntity buildEntity(FunctionGroupDO functionGroupDO, AppInfoDO appInfoDO, FrontendPageDO frontendPageDO, List<BackendFunctionDO> functionDOS);
 
     @Mappings({
             @Mapping(target = "id", ignore = true),

@@ -68,6 +68,7 @@ public interface FunctionGroupConverter {
     FunctionGroupMapDO buildFunctionGroupMap(String groupNo, BackendFunctionDO item);
 
     @Mappings({
+            @Mapping(target = "id", ignore = true),
             @Mapping(target = "no", expression = "java(CommonUtil.generateNo())"),
             @Mapping(target = "title", expression = "java(\"静态页面权限：\" + frontendPageDO.getTitle())"),
             @Mapping(target = "appKey", source = "appKey"),

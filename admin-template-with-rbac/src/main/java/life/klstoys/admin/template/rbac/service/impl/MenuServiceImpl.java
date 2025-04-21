@@ -143,6 +143,7 @@ public class MenuServiceImpl implements MenuService {
         CommonUtil.callSetterIfParamNotBlank(frontendPageDO::setComponentKey, request.getComponentKey());
         CommonUtil.callSetterIfParamNotBlank(frontendPageDO::setParentNo, request.getParentNo());
         CommonUtil.callSetterIfParamNotNull(frontendPageDO::setStatus, request.getStatus());
+        CommonUtil.callSetterIfParamNotNull(frontendPageDO::setStaticPage, request.isStaticPage());
         frontendPageRepository.updateById(frontendPageDO);
     }
 

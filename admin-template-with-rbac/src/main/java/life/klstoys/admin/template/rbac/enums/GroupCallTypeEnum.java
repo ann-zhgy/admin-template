@@ -16,7 +16,7 @@ import lombok.Getter;
 public enum GroupCallTypeEnum implements BaseEnum<String> {
     BY_PAGE(1, "by-page", "页面展示是调用"),
     BY_BUTTON(2, "by-button", "通过按钮或链接调用"),
-    NONE(3, "none", "不调用，仅表示拥有此页面的前端访问权限"),
+    STATIC(3, "static", "静态页面"),
     ;
     @EnumValue
     private final int code;

@@ -66,4 +66,14 @@ public interface FunctionGroupConverter {
             @Mapping(target = "updateTime", ignore = true)
     })
     FunctionGroupMapDO buildFunctionGroupMap(String groupNo, BackendFunctionDO item);
+
+    @Mappings({
+            @Mapping(target = "no", expression = "java(CommonUtil.generateNo())"),
+            @Mapping(target = "title", expression = "java(\"静态页面权限：\" + frontendPageDO.getTitle())"),
+            @Mapping(target = "appKey", source = "appKey"),
+            @Mapping(target = "frontendPageNo", source = "no"),
+            @Mapping(target = "groupCallType", expression = "java(GroupCallTypeEnum.STATIC)"),
+            @Mapping(target = "status", expression = "java(CommonStatusEnum.ENABLE)"),
+    })
+    FunctionGroupDO buildStaticFunctionGroup(FrontendPageDO frontendPageDO);
 }

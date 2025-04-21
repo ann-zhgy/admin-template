@@ -110,6 +110,11 @@ public class MenuServiceImpl implements MenuService {
     public void save(MenuSaveOrUpdateRequest request) {
         FrontendPageDO frontendPageDO = MenuConverter.INSTANCE.convertRequestToDO(request);
         frontendPageRepository.insert(frontendPageDO);
+        // 如果是静态页面。就添加相应的访问功能组
+        if (request.isStaticPage()) {
+            FunctionGroupDO functionGroupDO = FunctionGroupConverter.INSTANCE.buildStaticFunctionGroup(frontendPageDO);
+            functionGroupRepository.insert(functionGroupDO);
+        }
     }
 
     @Override
@@ -124,6 +129,15 @@ public class MenuServiceImpl implements MenuService {
             if (Objects.isNull(parent)) {
                 throw new BizException(RbacExceptionEnum.PARENT_MENU_NOT_EXIST);
             }
+        }
+        if (request.isStaticPage() != frontendPageDO.isStaticPage()) {
+            functionGroupRepository.deleteByFrontendPageNo(frontendPageDO.getNo());
+            // 如果菜单由动态页面改为静态页面，添加静态页面功能组
+            if (request.isStaticPage()) {
+                FunctionGroupDO functionGroupDO = FunctionGroupConverter.INSTANCE.buildStaticFunctionGroup(frontendPageDO);
+                functionGroupRepository.insert(functionGroupDO);
+            }
+            // 如果菜单由静态页面改为动态页面，不做后续操作，功能组需要重新绑定
         }
         CommonUtil.callSetterIfParamNotBlank(frontendPageDO::setTitle, request.getTitle());
         CommonUtil.callSetterIfParamNotBlank(frontendPageDO::setComponentKey, request.getComponentKey());
